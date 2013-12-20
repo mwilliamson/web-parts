@@ -1,0 +1,30 @@
+{
+  "name": "web-parts",
+  "version": "0.0.0",
+  "description": "",
+  "main": "lib/index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "nodeunit tests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:mwilliamson/web-parts.git"
+  },
+  "author": "Michael Williamson <mike@zwobble.org>",
+  "licenses": [
+    {
+      "type": "BSD",
+      "url": "http://opensource.org/licenses/BSD-2-Clause"
+    }
+  ],
+  "devDependencies": {
+    "nodeunit": "~0.8.0"
+  },
+  "dependencies": {
+    "q": "~0.9.7",
+    "underscore": "~1.5.2"
+  }
+}
