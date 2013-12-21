@@ -37,8 +37,8 @@ exports["composed part is rendered using composition of templated parts"] = asyn
                 name: "pages/search",
                 render: function(name, context) {
                     return webParts.compose([
-                        {name: "widgets/menu", context: {}},
-                        {name: "widgets/results", context: context}
+                        {part: "widgets/menu", context: {}},
+                        {part: "widgets/results", context: context}
                     ]);
                 }
             },
@@ -49,8 +49,37 @@ exports["composed part is rendered using composition of templated parts"] = asyn
     
     return renderer.render("pages/search", {query: "Your Song"}).then(function(output) {
         test.deepEqual(
-            '<div data-part-hash="c3b7a10af0705511e4fce36110467114ad7f5c2f"><div>widgets/menu: {}</div></div>' +
-            '<div data-part-hash="da9fead2b9fe4702d58905371895b616660d7f31"><div>widgets/results: {"query":"Your Song"}</div></div>',
+            '<div data-hole-name="widgets/menu" data-hole-hash="45d9013a691cdd8536a7039b0425198e8b1c9bf9"><div>widgets/menu: {}</div></div>' +
+            '<div data-hole-name="widgets/results" data-hole-hash="83707dfd7c3d9eda7915d9063b030fe329d9a3b2"><div>widgets/results: {"query":"Your Song"}</div></div>',
+            output
+        );
+    });
+});
+
+exports["template is used for composed parts if set"] = asyncTest(function(test) {
+    var renderer = webParts.renderer({
+        parts: [
+            {
+                name: "pages/search",
+                render: function(name, context) {
+                    return webParts.compose([
+                        {name: "menu", part: "widgets/menu", context: {}},
+                        {name: "results", part: "widgets/results", context: context}
+                    ]);
+                },
+                template: '<div class="container"><!-- HOLE: menu --><!-- HOLE: results --></div>'
+            },
+            {name: "widgets/menu", render: htmlRenderer},
+            {name: "widgets/results", render: htmlRenderer}
+        ]
+    });
+    
+    return renderer.render("pages/search", {query: "Your Song"}).then(function(output) {
+        test.deepEqual(
+            '<div class="container">' +
+            '<div data-hole-name="menu" data-hole-hash="8dac430e472bdd8c4cdd9150cb0dc5f839ec7812"><div>widgets/menu: {}</div></div>' +
+            '<div data-hole-name="results" data-hole-hash="0536826d998010287c65ef54d5da03ac50a23b83"><div>widgets/results: {"query":"Your Song"}</div></div>' +
+            '</div>',
             output
         );
     });
