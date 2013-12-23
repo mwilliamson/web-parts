@@ -93,9 +93,9 @@ exports["template is used for composed parts if set"] = asyncTest(function(test)
                         {name: "menu", part: "widgets/menu", context: {}},
                     ]);
                 },
-                template: webParts.commentsTemplate(
-                    '<div class="container"><!-- HOLE: menu --></div>'
-                )
+                template: {fillHoles: function(holeContents) {
+                    return '<div class="container">' + holeContents["menu"] + '</div>';
+                }}
             },
             {name: "widgets/menu", render: htmlRenderer}
         ]
