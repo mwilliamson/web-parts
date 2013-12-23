@@ -14,7 +14,7 @@ exports["result is null if no renderer exists for part"] = asyncTest(function(te
 });
 
 
-exports["templated part is rendered using templater"] = asyncTest(function(test) {
+exports["string is treated as literal when returned from render"] = asyncTest(function(test) {
     var renderer = webParts.renderer({
         parts: [
             {
@@ -30,7 +30,7 @@ exports["templated part is rendered using templater"] = asyncTest(function(test)
     });
 });
 
-exports["composed part is rendered using composition of templated parts"] = asyncTest(function(test) {
+exports["parts are composed by concatenation if no template is specified"] = asyncTest(function(test) {
     var renderer = webParts.renderer({
         parts: [
             {
