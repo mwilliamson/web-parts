@@ -21,7 +21,8 @@
     }
   ],
   "devDependencies": {
-    "nodeunit": "~0.8.0"
+    "nodeunit": "~0.8.0",
+    "jsdom": "~0.8.10"
   },
   "dependencies": {
     "q": "~0.9.7",

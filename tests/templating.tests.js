@@ -1,3 +1,6 @@
+var q = require("q");
+var jsdom = require("jsdom");
+
 var webParts = require("../");
 
 
@@ -30,30 +33,54 @@ exports["string is treated as literal when returned from render"] = asyncTest(fu
     });
 });
 
+var renderer = webParts.renderer({
+    parts: [
+        {
+            name: "pages/search",
+            render: function(name, context) {
+                return webParts.compose([
+                    {part: "widgets/menu", context: {}},
+                    {name: "results", part: "widgets/results", context: context}
+                ]);
+            }
+        },
+        {name: "widgets/menu", render: htmlRenderer},
+        {name: "widgets/results", render: htmlRenderer}
+    ]
+});
+
 exports["parts are composed by concatenation if no template is specified"] = asyncTest(function(test) {
-    var renderer = webParts.renderer({
-        parts: [
-            {
-                name: "pages/search",
-                render: function(name, context) {
-                    return webParts.compose([
-                        {part: "widgets/menu", context: {}},
-                        {part: "widgets/results", context: context}
-                    ]);
-                }
-            },
-            {name: "widgets/menu", render: htmlRenderer},
-            {name: "widgets/results", render: htmlRenderer}
-        ]
-    });
-    
-    return renderer.render("pages/search", {query: "Your Song"}).then(function(output) {
-        test.deepEqual(
-            '<div data-hole-name="widgets/menu" data-hole-hash="45d9013a691cdd8536a7039b0425198e8b1c9bf9"><div>widgets/menu: {}</div></div>' +
-            '<div data-hole-name="widgets/results" data-hole-hash="83707dfd7c3d9eda7915d9063b030fe329d9a3b2"><div>widgets/results: {"query":"Your Song"}</div></div>',
-            output
-        );
-    });
+    return renderer.render("pages/search", {query: "Your Song"})
+        .then(parseHtml)
+        .then(function(fragment) {
+            test.deepEqual('<div>widgets/menu: {}</div>', fragment.childNodes[0].innerHTML);
+            test.deepEqual('<div>widgets/results: {"query":"Your Song"}</div>', fragment.childNodes[1].innerHTML);
+            test.deepEqual(2, fragment.childNodes.length);
+        });
+});
+
+exports["filled holes include name"] = asyncTest(function(test) {
+    return renderer.render("pages/search", {query: "Your Song"})
+        .then(parseHtml)
+        .then(function(fragment) {
+            test.deepEqual('results', fragment.childNodes[1].getAttribute("data-hole-name"));
+        });
+});
+
+exports["filled holes name defaults to part name"] = asyncTest(function(test) {
+    return renderer.render("pages/search", {query: "Your Song"})
+        .then(parseHtml)
+        .then(function(fragment) {
+            test.deepEqual('widgets/menu', fragment.childNodes[0].getAttribute("data-hole-name"));
+        });
+});
+
+exports["filled holes include hash"] = asyncTest(function(test) {
+    return renderer.render("pages/search", {query: "Your Song"})
+        .then(parseHtml)
+        .then(function(fragment) {
+            test.deepEqual('0536826d998010287c65ef54d5da03ac50a23b83', fragment.childNodes[1].getAttribute("data-hole-hash"));
+        });
 });
 
 exports["template is used for composed parts if set"] = asyncTest(function(test) {
@@ -84,6 +111,16 @@ exports["template is used for composed parts if set"] = asyncTest(function(test)
         );
     });
 });
+
+function parseHtml(html) {
+    var deferred = q.defer();
+    
+    jsdom.env(html, function(errors, window) {
+        deferred.resolve(window.document.getElementsByTagName("body")[0]);
+    });
+    
+    return deferred.promise;
+}
 
 function asyncTest(func) {
     return function(test) {
