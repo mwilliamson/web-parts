@@ -9,10 +9,12 @@ var htmlRenderer = function(name, context) {
 };
 
 
-exports["result is null if no renderer exists for part"] = asyncTest(function(test) {
+exports["error if no renderer exists for part"] = asyncTest(function(test) {
     var renderer = webParts.renderer({});
     return renderer.render("pages/search", {query: "Your Song"}).then(function(output) {
-        test.deepEqual(null, output);
+        test.fail("expected failure");
+    }, function(error) {
+        test.deepEqual("Unknown part: pages/search", error.message);
     });
 });
 
