@@ -91,26 +91,32 @@ exports["template is used for composed parts if set"] = asyncTest(function(test)
                 render: function(name, context) {
                     return webParts.compose([
                         {name: "menu", part: "widgets/menu", context: {}},
-                        {name: "results", part: "widgets/results", context: context}
                     ]);
                 },
-                template: '<div class="container"><!-- HOLE: menu --><!-- HOLE: results --></div>'
+                template: webParts.commentsTemplate(
+                    '<div class="container"><!-- HOLE: menu --></div>'
+                )
             },
-            {name: "widgets/menu", render: htmlRenderer},
-            {name: "widgets/results", render: htmlRenderer}
+            {name: "widgets/menu", render: htmlRenderer}
         ]
     });
     
-    return renderer.render("pages/search", {query: "Your Song"}).then(function(output) {
-        test.deepEqual(
-            '<div class="container">' +
-            '<div data-hole-name="menu" data-hole-hash="8dac430e472bdd8c4cdd9150cb0dc5f839ec7812"><div>widgets/menu: {}</div></div>' +
-            '<div data-hole-name="results" data-hole-hash="0536826d998010287c65ef54d5da03ac50a23b83"><div>widgets/results: {"query":"Your Song"}</div></div>' +
-            '</div>',
-            output
-        );
+    return renderer.render("pages/search", {query: "Your Song"})
+        .then(parseHtml)
+        .then(function(fragment) {
+            var div = fragment.querySelector("div.container > div[data-hole-name='menu']");
+            test.deepEqual('<div>widgets/menu: {}</div>', div.innerHTML);
     });
 });
+
+exports["commentsTemplate reads <!-- HOLE: blah --> as hole in template"] = function(test) {
+    var template = webParts.commentsTemplate("one<!-- HOLE: blah -->two");
+    test.deepEqual(
+        "one-filled-two",
+        template.fillHoles({blah: "-filled-"})
+    );
+    test.done();
+};
 
 function parseHtml(html) {
     var deferred = q.defer();
