@@ -2,12 +2,10 @@ exports.parseRequest = parseRequest;
 exports.renderRequest = renderRequest;
 exports.renderer = renderer;
 
-var url = require("url");
-
 var renderer = exports.renderer = require("./parts").renderer;
 
-function parseRequest(request) {
-    var urlRegexResult = /\/page\/([0-9]+)/.exec(url.parse(request.url).pathname);
+function parseRequest(url) {
+    var urlRegexResult = /\/page\/([0-9]+)/.exec(url.pathname);
     var pageContext = {pageNumber: urlRegexResult ? urlRegexResult[1] : 1};
     return {
         partName: "parts/body",
@@ -15,7 +13,7 @@ function parseRequest(request) {
     };
 }
 
-function renderRequest(request) {
-    var partsRequest = parseRequest(request);
+function renderRequest(url) {
+    var partsRequest = parseRequest(url);
     return renderer.render(partsRequest.partName, partsRequest.context);
 }

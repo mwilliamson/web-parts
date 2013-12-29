@@ -2,7 +2,7 @@ var webParts = require("../");
 
 var bodyTemplate = webParts.commentsTemplate(
     '<h1>Front page</h1>' +
-    '<a href="/pages/2">Next page</a>' +
+    '<a href="/page/2">Next page</a>' +
     '<!-- HOLE: main -->' +
     '<script src="/client.js"></script>'
 );

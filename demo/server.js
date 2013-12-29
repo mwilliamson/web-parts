@@ -8,13 +8,14 @@ var handler = require("./handler");
 
 function main() {
     http.createServer(function(request, response) {
-        if (url.parse(request.url).pathname === "/client.js") {
+        var parsedUrl = url.parse(request.url);
+        if (parsedUrl.pathname === "/client.js") {
             browserify(path.join(__dirname, "client.js")).bundle(function(error, clientJavaScript) {
                 response.writeHead(200, {"content-type": "application/javascript"});
                 response.end(clientJavaScript);
             });
         } else {
-            handler.renderRequest(request).then(function(bodyHtml) {
+            handler.renderRequest(parsedUrl).then(function(bodyHtml) {
                 response.writeHead(200, {"content-type": "text/html"});
                 response.end(renderPage(bodyHtml))
             }).done();
