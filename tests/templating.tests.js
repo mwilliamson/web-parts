@@ -117,6 +117,25 @@ exports["update only modifies changed elements"] = asyncTest(function(test) {
     return renderer.render("pages/search", {query: "Your Song"})
         .then(parseHtmlElement)
         .then(function(root) {
+            test.deepEqual(
+                '0536826d998010287c65ef54d5da03ac50a23b83',
+                root.childNodes[1].getAttribute("data-hole-hash")
+            );
+            return renderer.update("pages/search", {query: "Shining Light"}, root)
+                .then(function() { return root; });
+        })
+        .then(function(root) {
+            test.deepEqual(
+                '57310bca57aad3f3c6c3476a9c8a46b49b8158a8',
+                root.childNodes[1].getAttribute("data-hole-hash")
+            );
+        });
+});
+
+exports["update resets data-hole-hash"] = asyncTest(function(test) {
+    return renderer.render("pages/search", {query: "Your Song"})
+        .then(parseHtmlElement)
+        .then(function(root) {
             root.childNodes[0].childNodes[0].isOriginal = true;
             root.childNodes[1].childNodes[0].isOriginal = true;
             return renderer.update("pages/search", {query: "Shining Light"}, root)
