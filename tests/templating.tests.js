@@ -113,6 +113,21 @@ exports["template is used for composed parts if set"] = asyncTest(function(test)
     });
 });
 
+exports["update only modifies changed elements"] = asyncTest(function(test) {
+    return renderer.render("pages/search", {query: "Your Song"})
+        .then(parseHtmlElement)
+        .then(function(root) {
+            root.childNodes[0].childNodes[0].isOriginal = true;
+            root.childNodes[1].childNodes[0].isOriginal = true;
+            return renderer.update("pages/search", {query: "Shining Light"}, root)
+                .then(function() { return root; });
+        })
+        .then(function(root) {
+            test.ok(root.childNodes[0].childNodes[0].isOriginal);
+            test.ok(!root.childNodes[1].childNodes[0].isOriginal);
+        });
+});
+
 exports["commentsTemplate reads <!-- HOLE: blah --> as hole in template"] = function(test) {
     var template = webParts.commentsTemplate("one<!-- HOLE: blah -->two");
     test.deepEqual(
