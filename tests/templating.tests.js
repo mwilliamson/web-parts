@@ -30,9 +30,11 @@ exports["string is treated as literal when returned from render"] = asyncTest(fu
             }
         ]
     });
-    return renderer.render("pages/search", {query: "Your Song"}).then(function(output) {
-        test.deepEqual('<div>Search: Your Song</div>', output);
-    });
+    return renderer.render("pages/search", {query: "Your Song"})
+        .then(parseHtmlElement)
+        .then(function(fragment) {
+            test.deepEqual('<div>Search: Your Song</div>', fragment.innerHTML);
+        });
 });
 
 var renderer = webParts.renderer({
@@ -53,7 +55,7 @@ var renderer = webParts.renderer({
 
 exports["parts are composed by concatenation if no template is specified"] = asyncTest(function(test) {
     return renderer.render("pages/search", {query: "Your Song"})
-        .then(parseHtml)
+        .then(parseHtmlElement)
         .then(function(fragment) {
             test.deepEqual('<div>widgets/menu: {}</div>', fragment.childNodes[0].innerHTML);
             test.deepEqual('<div>widgets/results: {"query":"Your Song"}</div>', fragment.childNodes[1].innerHTML);
@@ -63,7 +65,7 @@ exports["parts are composed by concatenation if no template is specified"] = asy
 
 exports["filled holes include name"] = asyncTest(function(test) {
     return renderer.render("pages/search", {query: "Your Song"})
-        .then(parseHtml)
+        .then(parseHtmlElement)
         .then(function(fragment) {
             test.deepEqual('results', fragment.childNodes[1].getAttribute("data-hole-name"));
         });
@@ -71,7 +73,7 @@ exports["filled holes include name"] = asyncTest(function(test) {
 
 exports["filled holes name defaults to part name"] = asyncTest(function(test) {
     return renderer.render("pages/search", {query: "Your Song"})
-        .then(parseHtml)
+        .then(parseHtmlElement)
         .then(function(fragment) {
             test.deepEqual('widgets/menu', fragment.childNodes[0].getAttribute("data-hole-name"));
         });
@@ -79,7 +81,7 @@ exports["filled holes name defaults to part name"] = asyncTest(function(test) {
 
 exports["filled holes include hash"] = asyncTest(function(test) {
     return renderer.render("pages/search", {query: "Your Song"})
-        .then(parseHtml)
+        .then(parseHtmlElement)
         .then(function(fragment) {
             test.deepEqual('0536826d998010287c65ef54d5da03ac50a23b83', fragment.childNodes[1].getAttribute("data-hole-hash"));
         });
@@ -104,7 +106,7 @@ exports["template is used for composed parts if set"] = asyncTest(function(test)
     });
     
     return renderer.render("pages/search", {query: "Your Song"})
-        .then(parseHtml)
+        .then(parseHtmlElement)
         .then(function(fragment) {
             var div = fragment.querySelector("div.container > div[data-hole-name='menu']");
             test.deepEqual('<div>widgets/menu: {}</div>', div.innerHTML);
@@ -120,7 +122,7 @@ exports["commentsTemplate reads <!-- HOLE: blah --> as hole in template"] = func
     test.done();
 };
 
-function parseHtml(html) {
+function parseHtmlFragment(html) {
     var deferred = q.defer();
     
     jsdom.env(html, function(errors, window) {
@@ -128,6 +130,13 @@ function parseHtml(html) {
     });
     
     return deferred.promise;
+}
+
+function parseHtmlElement(html) {
+    return parseHtmlFragment(html)
+        .then(function(fragment) {
+            return fragment.childNodes[0];
+        });
 }
 
 function asyncTest(func) {

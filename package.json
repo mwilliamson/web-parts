@@ -22,7 +22,8 @@
   ],
   "devDependencies": {
     "nodeunit": "~0.8.0",
-    "jsdom": "~0.8.10"
+    "jsdom": "~0.8.10",
+    "browserify": "~3.17.0"
   },
   "dependencies": {
     "q": "~0.9.7",
