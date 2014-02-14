@@ -147,6 +147,20 @@ exports["update resets data-hole-hash"] = asyncTest(function(test) {
         });
 });
 
+exports["update resets data-hole-hash on compositions"] = asyncTest(function(test) {
+    var originalHash;
+    return renderer.render("pages/search", {query: "Your Song"})
+        .then(parseHtmlElement)
+        .then(function(root) {
+            originalHash = root.getAttribute("data-hole-hash");
+            return renderer.update("pages/search", {query: "Shining Light"}, root)
+                .then(function() { return root; });
+        })
+        .then(function(root) {
+            test.notEqual(originalHash, root.getAttribute("data-hole-hash"));
+        });
+});
+
 exports["commentsTemplate reads <!-- HOLE: blah --> as hole in template"] = function(test) {
     var template = webParts.commentsTemplate("one<!-- HOLE: blah -->two");
     test.deepEqual(
