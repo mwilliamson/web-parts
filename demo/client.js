@@ -9,12 +9,13 @@ function updatePart(href, element) {
     handler.renderer.update(request.partName, request.context, element).done();
 }
 
-var anchorElements = document.getElementsByTagName("a");
-
-_.forEach(anchorElements, function(element) {
-    element.addEventListener("click", function(event) {
-        updatePart(element.href, document.querySelector("body > div"));
+var topPartElement = document.querySelector("body > div");
+topPartElement.addEventListener("click", function(event) {
+    var target = event.target;
+    if (target.tagName === "A") {
+        updatePart(target.href, topPartElement);
+        history.pushState({}, "", target.href);
         event.preventDefault();
         return false;
-    }, false);
-});
+    }
+}, false);
