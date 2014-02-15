@@ -1,5 +1,6 @@
 var q = require("q");
 var jsdom = require("jsdom");
+var _ = require("underscore");
 
 var webParts = require("../");
 
@@ -169,6 +170,84 @@ exports["commentsTemplate reads <!-- HOLE: blah --> as hole in template"] = func
     );
     test.done();
 };
+
+exports["grand child parts with same name as children are not affected by updates to children"] = asyncTest(function(test) {
+    var renderer = webParts.renderer({
+        parts: [
+            {
+                name: "one",
+                render: function(name, context) {
+                    return webParts.compose([
+                        {name: "child-one", part: "one-one", context: {}},
+                        {name: "main", part: "empty", context: context}
+                    ]);
+                }
+            },
+            {
+                name: "one-one",
+                render: function(name, context) {
+                    return webParts.compose([
+                        {name: "main", part: "empty", context: context}
+                    ]);
+                }
+            },
+            {name: "empty", render: function() { return "<div></div>"; }}
+        ]
+    });
+    
+    function findGrandChild(root) {
+        return root.querySelector("*[data-hole-name='child-one'] > *[data-hole-name='main']");
+    }
+    
+    function findChild(root) {
+        return _.filter(root.childNodes, function(node) {
+            return node.tagName === "DIV";
+        })[1];
+    }
+    
+    return renderer.render("one", {x: 1})
+        .then(parseHtmlElement)
+        .then(function(root) {
+            findGrandChild(root).childNodes[0].isOriginal = true;
+            findChild(root).childNodes[0].isOriginal = true;
+            return renderer.update("one", {x: 2}, root)
+                .then(function() { return root; });
+        })
+        .then(function(root) {
+            test.ok(findGrandChild(root).childNodes[0].isOriginal);
+            test.ok(!findChild(root).childNodes[0].isOriginal);
+        });
+});
+
+exports["hole element is updated when grand child element of parent part"] = asyncTest(function(test) {
+    var renderer = webParts.renderer({
+        parts: [
+            {
+                name: "pages/search",
+                render: function(name, context) {
+                    return webParts.compose([
+                        {name: "menu", part: "widgets/menu", context: context},
+                    ]);
+                },
+                template: {fillHoles: function(holeContents) {
+                    return '<div><div class="container">' + holeContents["menu"] + '</div></div>';
+                }}
+            },
+            {name: "widgets/menu", render: htmlRenderer}
+        ]
+    });
+    
+    return renderer.render("pages/search", {query: "Your Song"})
+        .then(parseHtmlElement)
+        .then(function(root) {
+            return renderer.update("pages/search", {query: "Shining Light"}, root)
+                .then(function() { return root; });
+        })
+        .then(function(fragment) {
+            var div = fragment.querySelector("div.container > div[data-hole-name='menu']");
+            test.deepEqual('<div>widgets/menu: {"query":"Shining Light"}</div>', div.innerHTML);
+    });
+});
 
 function parseHtmlFragment(html) {
     var deferred = q.defer();
