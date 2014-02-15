@@ -285,6 +285,54 @@ exports["earlier updates are ignored if they finish after later updates"] = asyn
         });
 });
 
+exports["events are emitted on update"] = asyncTest(function(test) {
+    var deferred = q.defer();
+    var renderer = webParts.renderer({
+        parts: [
+            {
+                name: "main",
+                render: function(name, context) {
+                    if (context.x) {
+                        return deferred.promise;
+                    } else {
+                        return "";
+                    }
+                }
+            }
+        ]
+    });
+    
+    var beforeUpdate = [];
+    renderer.on("beforeUpdate", function(event) {
+        beforeUpdate.push(event);
+    });
+    var afterUpdate = [];
+    var afterUpdateDeferred = q.defer();
+    renderer.on("afterUpdate", function(event) {
+        afterUpdate.push(event);
+        afterUpdateDeferred.resolve();
+    });
+    
+    return renderer.render("main", {})
+        .then(parseHtmlElement)
+        .then(function(root) {
+            renderer.update("main", {x: 1}, root);
+            
+            test.equal(1, beforeUpdate.length);
+            test.ok(root === beforeUpdate[0].element);
+            test.equal(0, afterUpdate.length);
+            
+            deferred.resolve("");
+            
+            return afterUpdateDeferred.promise.then(function() { return root; });
+        })
+        .then(function(root) {
+            test.equal(1, beforeUpdate.length);
+            test.equal(1, afterUpdate.length);
+            test.ok(root === afterUpdate[0].element);
+        });
+});
+
 function parseHtmlFragment(html) {
     var deferred = q.defer();
     
