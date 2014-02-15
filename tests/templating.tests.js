@@ -249,6 +249,42 @@ exports["hole element is updated when grand child element of parent part"] = asy
     });
 });
 
+exports["earlier updates are ignored if they finish after later updates"] = asyncTest(function(test) {
+    var second = q.defer();
+    var third = q.defer();
+    
+    var promises = {1: "one", 2: second.promise, 3: third.promise};
+    
+    var renderer = webParts.renderer({
+        parts: [
+            {
+                name: "main",
+                render: function(name, context) {
+                    return promises[context.promise];
+                }
+            }
+        ]
+    });
+    
+    var secondUpdate;
+    
+    return renderer.render("main", {promise: 1})
+        .then(parseHtmlElement)
+        .then(function(root) {
+            secondUpdate = renderer.update("main", {promise: 2}, root);
+            var thirdUpdate = renderer.update("main", {promise: 3}, root);
+            third.resolve("third");
+            return thirdUpdate.then(function() { return root; });
+        })
+        .then(function(root) {
+            second.resolve("second");
+            return secondUpdate.then(function() { return root; });
+        })
+        .then(function(root) {
+            test.equal("third", root.textContent);
+        });
+});
+
 function parseHtmlFragment(html) {
     var deferred = q.defer();
     
