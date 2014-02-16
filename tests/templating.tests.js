@@ -285,7 +285,7 @@ exports["earlier updates are ignored if they finish after later updates"] = asyn
         });
 });
 
-exports["events are emitted on update"] = asyncTest(function(test) {
+exports["beforeUpdate and afterUpdate events are emitted on update"] = asyncTest(function(test) {
     var deferred = q.defer();
     var renderer = webParts.renderer({
         parts: [
@@ -331,6 +331,49 @@ exports["events are emitted on update"] = asyncTest(function(test) {
             test.equal(1, afterUpdate.length);
             test.ok(root === afterUpdate[0].element);
         });
+});
+
+exports["afterUpdateSelf is emitted after composed part has updated itself but not its children"] = asyncTest(function(test) {
+    var deferred = q.defer();
+    var renderer = webParts.renderer({
+        parts: [
+            {
+                name: "container",
+                render: function(name, context) {
+                    return webParts.compose([
+                        {part: "main", context: context}
+                    ]);
+                }
+            },
+            {
+                name: "main",
+                render: function(name, context) {
+                    if (context.x) {
+                        var deferred = q.defer();
+                        return deferred.promise;
+                    } else {
+                        return "";
+                    }
+                }
+            }
+        ]
+    });
+    
+    var afterUpdateSelf = [];
+    var afterUpdateSelfDeferred = q.defer();
+    renderer.on("afterUpdateSelf", function(event) {
+        afterUpdateSelf.push(event);
+        afterUpdateSelfDeferred.resolve();
+    });
+    
+    return renderer.render("container", {})
+        .then(parseHtmlElement)
+        .then(function(root) {
+            renderer.update("container", {x: 1}, root);
+            return afterUpdateSelfDeferred.promise;
+        }).then(function() {
+            test.equal(1, afterUpdateSelf.length);
+        })
 });
 
 function parseHtmlFragment(html) {
