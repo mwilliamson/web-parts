@@ -28,6 +28,9 @@ main();
 function renderPage(bodyHtml) {
     return '<!DOCTYPE html>' + 
         '<html>' +
+        '  <head>' +
+        '    <style>.web-parts-overlay-relative { position: relative; }</style>' +
+        '  </head>' +
         '  <body>' +
         bodyHtml +
         '  </body>' +

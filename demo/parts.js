@@ -5,6 +5,7 @@ var bodyTemplate = webParts.commentsTemplate(
     '<h1>Front page</h1>' +
     '<!-- HOLE: nav -->' +
     '<!-- HOLE: main -->' +
+    '<script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>' +
     '<script src="/client.js"></script>'
 );
 
