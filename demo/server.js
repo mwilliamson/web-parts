@@ -7,6 +7,8 @@ var browserify = require("browserify");
 var handler = require("./handler");
 
 function main() {
+    var port = 8090;
+        
     http.createServer(function(request, response) {
         var parsedUrl = url.parse(request.url);
         if (parsedUrl.pathname === "/client.js") {
@@ -20,7 +22,8 @@ function main() {
                 response.end(renderPage(bodyHtml))
             }).done();
         }
-    }).listen(8090);
+    }).listen(port);
+    console.log("Server running on localhost:" + port);
 }
 
 main();
