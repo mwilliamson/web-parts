@@ -1,5 +1,5 @@
 var webParts = require("../");
-var q = require("q");
+var promises = require("../lib/promises");
 
 var bodyTemplate = webParts.commentsTemplate(
     '<h1>Front page</h1>' +
@@ -35,7 +35,7 @@ var parts = [
     {
         name: "parts/results",
         render: function(name, context) {
-            var deferred = q.defer();
+            var deferred = promises.defer();
             
             setTimeout(function() {
                 deferred.resolve("<h2>Page " + context.pageNumber + "</h2>");
