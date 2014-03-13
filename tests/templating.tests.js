@@ -1,8 +1,8 @@
-var q = require("q");
 var jsdom = require("jsdom");
 var _ = require("underscore");
 
 var webParts = require("../");
+var promises = require("../lib/promises");
 
 
 var htmlRenderer = function(name, context) {
@@ -250,17 +250,17 @@ exports["hole element is updated when grand child element of parent part"] = asy
 });
 
 exports["earlier updates are ignored if they finish after later updates"] = asyncTest(function(test) {
-    var second = q.defer();
-    var third = q.defer();
+    var second = promises.defer();
+    var third = promises.defer();
     
-    var promises = {1: "one", 2: second.promise, 3: third.promise};
+    var partPromises = {1: "one", 2: second.promise, 3: third.promise};
     
     var renderer = webParts.renderer({
         parts: [
             {
                 name: "main",
                 render: function(name, context) {
-                    return promises[context.promise];
+                    return partPromises[context.promise];
                 }
             }
         ]
@@ -286,7 +286,7 @@ exports["earlier updates are ignored if they finish after later updates"] = asyn
 });
 
 exports["beforeUpdate and afterUpdate events are emitted on update"] = asyncTest(function(test) {
-    var deferred = q.defer();
+    var deferred = promises.defer();
     var renderer = webParts.renderer({
         parts: [
             {
@@ -307,7 +307,7 @@ exports["beforeUpdate and afterUpdate events are emitted on update"] = asyncTest
         beforeUpdate.push(event);
     });
     var afterUpdate = [];
-    var afterUpdateDeferred = q.defer();
+    var afterUpdateDeferred = promises.defer();
     renderer.on("afterUpdate", function(event) {
         afterUpdate.push(event);
         afterUpdateDeferred.resolve();
@@ -334,7 +334,7 @@ exports["beforeUpdate and afterUpdate events are emitted on update"] = asyncTest
 });
 
 exports["afterUpdateSelf is emitted after composed part has updated itself but not its children"] = asyncTest(function(test) {
-    var deferred = q.defer();
+    var deferred = promises.defer();
     var renderer = webParts.renderer({
         parts: [
             {
@@ -349,7 +349,7 @@ exports["afterUpdateSelf is emitted after composed part has updated itself but n
                 name: "main",
                 render: function(name, context) {
                     if (context.x) {
-                        var deferred = q.defer();
+                        var deferred = promises.defer();
                         return deferred.promise;
                     } else {
                         return "";
@@ -360,7 +360,7 @@ exports["afterUpdateSelf is emitted after composed part has updated itself but n
     });
     
     var afterUpdateSelf = [];
-    var afterUpdateSelfDeferred = q.defer();
+    var afterUpdateSelfDeferred = promises.defer();
     renderer.on("afterUpdateSelf", function(event) {
         afterUpdateSelf.push(event);
         afterUpdateSelfDeferred.resolve();
@@ -377,7 +377,7 @@ exports["afterUpdateSelf is emitted after composed part has updated itself but n
 });
 
 function parseHtmlFragment(html) {
-    var deferred = q.defer();
+    var deferred = promises.defer();
     
     jsdom.env(html, function(errors, window) {
         deferred.resolve(window.document.getElementsByTagName("body")[0]);
