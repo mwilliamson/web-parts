@@ -51,7 +51,10 @@ var renderer = webParts.renderer({
         },
         {name: "widgets/menu", render: htmlRenderer},
         {name: "widgets/results", render: htmlRenderer}
-    ]
+    ],
+    generateHash: function(value) {
+        return JSON.stringify(value);
+    }
 });
 
 exports["parts are composed by concatenation if no template is specified"] = asyncTest(function(test) {
@@ -84,7 +87,12 @@ exports["filled holes include hash"] = asyncTest(function(test) {
     return renderer.render("pages/search", {query: "Your Song"})
         .then(parseHtmlElement)
         .then(function(fragment) {
-            test.deepEqual('0536826d998010287c65ef54d5da03ac50a23b83', fragment.childNodes[1].getAttribute("data-hole-hash"));
+            var hash = fragment.childNodes[1].getAttribute("data-hole-hash");
+            test.deepEqual({
+                name: "results",
+                part:"widgets/results",
+                context: {"query":"Your Song"}
+            }, JSON.parse(hash));
         });
 });
 
@@ -114,26 +122,26 @@ exports["template is used for composed parts if set"] = asyncTest(function(test)
     });
 });
 
-exports["update only modifies changed elements"] = asyncTest(function(test) {
+exports["update resets data-hole-hash"] = asyncTest(function(test) {
     return renderer.render("pages/search", {query: "Your Song"})
         .then(parseHtmlElement)
         .then(function(root) {
             test.deepEqual(
-                '0536826d998010287c65ef54d5da03ac50a23b83',
-                root.childNodes[1].getAttribute("data-hole-hash")
+                {name: "results", part: "widgets/results", context: {query: "Your Song"}},
+                JSON.parse(root.childNodes[1].getAttribute("data-hole-hash"))
             );
             return renderer.update("pages/search", {query: "Shining Light"}, root)
                 .then(function() { return root; });
         })
         .then(function(root) {
             test.deepEqual(
-                '57310bca57aad3f3c6c3476a9c8a46b49b8158a8',
-                root.childNodes[1].getAttribute("data-hole-hash")
+                {name: "results", part: "widgets/results", context: {query: "Shining Light"}},
+                JSON.parse(root.childNodes[1].getAttribute("data-hole-hash"))
             );
         });
 });
 
-exports["update resets data-hole-hash"] = asyncTest(function(test) {
+exports["update only modifies changed elements"] = asyncTest(function(test) {
     return renderer.render("pages/search", {query: "Your Song"})
         .then(parseHtmlElement)
         .then(function(root) {
