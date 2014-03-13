@@ -162,15 +162,6 @@ exports["update resets data-hole-hash on compositions"] = asyncTest(function(tes
         });
 });
 
-exports["commentsTemplate reads <!-- HOLE: blah --> as hole in template"] = function(test) {
-    var template = webParts.commentsTemplate("one<!-- HOLE: blah -->two");
-    test.deepEqual(
-        "one-filled-two",
-        template.fillHoles({blah: "-filled-"})
-    );
-    test.done();
-};
-
 exports["grand child parts with same name as children are not affected by updates to children"] = asyncTest(function(test) {
     var renderer = webParts.renderer({
         parts: [

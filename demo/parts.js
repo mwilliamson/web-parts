@@ -1,7 +1,7 @@
 var webParts = require("../");
 var promises = require("../lib/promises");
 
-var bodyTemplate = webParts.commentsTemplate(
+var bodyTemplate = webParts.templating.commentsTemplate(
     '<h1>Front page</h1>' +
     '<!-- HOLE: nav -->' +
     '<!-- HOLE: main -->' +
