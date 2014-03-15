@@ -1,3 +1,25 @@
+## Renderer
+
+A renderer is created by calling `webParts.renderer(options)`,
+where `options` is an object with the following properties:
+
+* `parts`: a list of parts.
+
+A renderer has the following methods:
+
+* `render(partName, context)`: render the part with name `partName` using `context` as the context.
+  Returns a string of HTML containing a single top-level `div`.
+  Once this string has been parsed and turned into a DOM element,
+  that top-level `div` is the element that should be passed into `update`.
+
+* `update(partName, context, element)`: update the given `element`.
+
+  TODO: should the `partName` argument be removed?
+  If not, we should properly handle the case where the partName changes
+  i.e. start from scratch rather trying to update
+
+## Parts
+
 A part is an object with the following properties:
 
 * `name`: the name for that part.
@@ -15,7 +37,7 @@ A part is an object with the following properties:
 
 * `template`: optional for compositional parts, ignored for other parts.
 
-## Compositional parts
+### Compositional parts
 
 Compositional parts should return `webParts.compose(holes)` from the `render` function,
 where `holes` should be a list of holes.
@@ -34,9 +56,9 @@ If a template is set,
 then `template.fillHoles(holeContents)` is called to generate the final HTML.
 `holeContents` is an object mapping the name of holes to the HTML generated for each hole.
 
-## Example parts
+### Example parts
 
-### Returning a string
+#### Returning a string
 
 ```javascript
 {
@@ -47,7 +69,7 @@ then `template.fillHoles(holeContents)` is called to generate the final HTML.
 }
 ```
 
-### Returning a composition
+#### Returning a composition
 
 ```javascript
 {
