@@ -10,9 +10,11 @@ A renderer has the following methods:
 * `render(partName, context)`: render the part with name `partName` using `context` as the context.
   Returns a string of HTML containing a single top-level `div`.
   Once this string has been parsed and turned into a DOM element,
-  that top-level `div` is the element that should be passed into `update`.
+  that top-level `div` is the element that should be passed into `update()`.
 
 * `update(partName, context, element)`: update the given `element`.
+  `element` should a DOM element that corresponds to the top-level `div` returned from `render()`.
+  If the part is compositional, then each hole is updated as soon as it's ready.
 
   TODO: should the `partName` argument be removed?
   If not, we should properly handle the case where the partName changes
