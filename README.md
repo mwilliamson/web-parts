@@ -10,17 +10,29 @@ A part is an object with the following properties:
     * an string containing HTML, or
 
     * a composition of other parts using `webParts.compose()`.
-      Note that the same holes should always be returned for updating to work correctly.
 
   These return values can also be wrapped in a promise.
 
-* `template`: only used for compositional parts.
-  If set, `template.fillHoles(holeContents)` is called to generate the final HTML string for that part.
-  `holeContents` is an object mapping the name of holes to the HTML generated for each hole.
+* `template`: optional for compositional parts, ignored for other parts.
 
-## Composing parts
+## Compositional parts
 
-To compose parts together, a part should call `webParts.compose()`.
+Compositional parts should return `webParts.compose(holes)` from the `render` function,
+where `holes` should be a list of holes.
+A compositional part should always return the same number of holes with the same names for updates to work correctly.
+
+A hole is an object with the following properties:
+
+* `name`: a name unique to this compositional part
+* `part`: the name of the part that should be used to fill this hole
+* `context`: the context that should be used by the part to fill this hole
+
+HTML for each hole is then generated using the specified part and context.
+If no template is set on the part,
+then the final HTML for the compositional part is the concatenation of the HTML of each of the holes.
+If a template is set,
+then `template.fillHoles(holeContents)` is called to generate the final HTML.
+`holeContents` is an object mapping the name of holes to the HTML generated for each hole.
 
 ## Example parts
 
